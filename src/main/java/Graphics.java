@@ -18,6 +18,7 @@ import java.util.Random;
 public class Graphics extends JFrame {
     protected String styleSheet =
         "node {" +
+        "   size: 10px, 10px;" +
         "	fill-color: grey, red;" +
         "   text-background-mode: rounded-box;" +
         "   text-background-color: orange;" +
@@ -135,6 +136,7 @@ public class Graphics extends JFrame {
 				    @Override
                     public void actionPerformed(ActionEvent actionEvent) {
 				        frame.setVisible(false);
+                        frame.dispose();
 				    }
 				});
 				ButtonGroup bg = new ButtonGroup();
@@ -192,6 +194,7 @@ public class Graphics extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         frame.setVisible(false);
+                        frame.dispose();
                     }
                 });
 
@@ -237,6 +240,7 @@ public class Graphics extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         frame.setVisible(false);
+                        frame.dispose();
                     }
                 });
 
@@ -297,6 +301,7 @@ public class Graphics extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         frame.setVisible(false);
+                        frame.dispose();
                     }
                 });
 
@@ -358,6 +363,7 @@ public class Graphics extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         frame.setVisible(false);
+                        frame.dispose();
                     }
                 });
 
@@ -385,7 +391,7 @@ public class Graphics extends JFrame {
         table.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Table t = new Table(graph);
+                new Table(graph, Liste, Liens);
             }
         });
         ButtonGroup bGroup = new ButtonGroup();
