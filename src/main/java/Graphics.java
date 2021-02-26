@@ -1,15 +1,19 @@
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
+import org.graphstream.stream.GraphParseException;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Graphics extends JFrame {
     protected String styleSheet =
@@ -40,31 +44,33 @@ public class Graphics extends JFrame {
         Graph graph = new MultiGraph("Routage");
         graph.setAttribute("ui.stylesheet", styleSheet);
 
-        graph.addNode("Noeud1");
-        Node node = graph.getNode("Noeud1");
-        node.setAttribute("ui.label", "Noeud1");
-        graph.addNode("Noeud2");
-        node = graph.getNode("Noeud2");
-        node.setAttribute("ui.label", "Noeud2");
-        graph.addNode("Noeud3");
-        node = graph.getNode("Noeud3");
-        node.setAttribute("ui.label", "Noeud3");
-        Liste.add("Noeud1");
-        Liste.add("Noeud2");
-        Liste.add("Noeud3");
-        Liens.add("Noeud1Noeud2");
-        Liens.add("Noeud2Noeud3");
-        Liens.add("Noeud3Noeud1");
+        for(int i = 1; i < 7; i++) {
+            Liste.add("Noeud" + i);
+            for(int j = i + 1; j < 7; j++) {
+                Liens.add("Noeud" + i + "-" + "Noeud" + j);
+            }
+        }
 
-        graph.addEdge("Noeud1Noeud2", "Noeud1", "Noeud2");
-        graph.addEdge("Noeud2C", "Noeud2", "Noeud3");
-        graph.addEdge("Noeud3Noeud1", "Noeud3", "Noeud1");
+        try{
+            graph.read("src/main/java/graph.dgs");
+        } catch (IOException | GraphParseException e) {
+            e.printStackTrace();
+            System.out.println("DGS FILE ERROR");
+        }
+
+        /* Génération aléatoire de poids de lien entre 1 et 10 */
+        Random r = new Random();
+        for(int i = 0;i < Liste.size(); i++) {
+            Node n = graph.getNode(i);
+            n.setAttribute("p", r.nextInt(10 - 1) + 1);
+        }
 
         graph.display();
 
         JFrame f = new JFrame("Controle");
 
-        JButton add = new JButton("Ajouter Noeud");
+        JButton add = new JButton("Ajouter Noeud avec Lien");
+        JButton modPoids = new JButton("Modifier le poids d'un Noeud");
         JButton addLien = new JButton("Ajouter Lien");
         JButton supprimerNoeud = new JButton("Supprimer Noeud");
         JButton supprimerLien = new JButton("Supprimer Lien");
@@ -98,8 +104,8 @@ public class Graphics extends JFrame {
                         } else {
                             graph.addNode(nom.getText());
                             Liste.add(nom.getText());
-                            graph.addEdge(nom.getText() + combo.getSelectedItem(), nom.getText(), (String) combo.getSelectedItem());
-                            Liens.add(nom.getText() + combo.getSelectedItem());
+                            graph.addEdge(nom.getText() + "-" + combo.getSelectedItem(), nom.getText(), (String) combo.getSelectedItem());
+                            Liens.add(nom.getText() + "-" + combo.getSelectedItem());
                         }
                         Node node = graph.getNode(nom.getText());
                         node.setAttribute("ui.label", nom.getText());
@@ -248,8 +254,8 @@ public class Graphics extends JFrame {
                 ok.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-                        graph.addEdge((String) comboA.getSelectedItem() + comboB.getSelectedItem(), (String) comboA.getSelectedItem(), (String) comboB.getSelectedItem());
-                        Liens.add((String)comboA.getSelectedItem() + comboB.getSelectedItem());
+                        graph.addEdge(comboA.getSelectedItem() + "-" + comboB.getSelectedItem(), (String) comboA.getSelectedItem(), (String) comboB.getSelectedItem());
+                        Liens.add(comboA.getSelectedItem() + "-" + comboB.getSelectedItem());
                         frame.setVisible(false);
                     }
                 });
@@ -281,6 +287,62 @@ public class Graphics extends JFrame {
                 frame.setVisible(true);
             }
         });
+        modPoids.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JFrame frame = new JFrame("Modifier le poids");
+                JTextField poids = new JTextField("      ");
+                JButton ok = new JButton("OK");
+                JButton quitter = new JButton("Quitter");
+                JComboBox combo = new JComboBox();
+                Node noeud;
+                for(int i = 0;i < Liste.size();i++){
+                    noeud = graph.getNode(Liste.get(i));
+                    combo.addItem(Liste.get(i) + " : " + noeud.getAttribute("p"));
+                }
+
+                combo.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        poids.setText((String)combo.getSelectedItem()); //TODO Faire un format pour avoir que ce qui est après du " : "
+                    }
+                });
+                ok.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Node n = graph.getNode((String)combo.getSelectedItem()); //TODO Pareil
+                        //n.setAttribute("p", poids.getText()); //nullPointerException
+                        frame.setVisible(false);
+                    }
+                });
+                quitter.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        frame.setVisible(false);
+                    }
+                });
+
+                ButtonGroup bg = new ButtonGroup();
+                bg.add(quitter);
+                bg.add(ok);
+
+                JPanel up = new JPanel(new BorderLayout());
+                up.add(poids, BorderLayout.NORTH);
+                up.add(combo, BorderLayout.SOUTH);
+
+                JPanel down = new JPanel(new BorderLayout());
+                down.add(ok, BorderLayout.WEST);
+                down.add(quitter, BorderLayout.EAST);
+
+                frame.add(up, BorderLayout.NORTH);
+                frame.add(down, BorderLayout.SOUTH);
+                frame.pack();
+                Rectangle bordure = f.getBounds();
+                frame.setLocation(bordure.x + bordure.width, bordure.y);
+                frame.setVisible(true);
+                poids.setText("");  //TODO A voir si c'est nécéssaire
+            }
+        });
         ButtonGroup bGroup = new ButtonGroup();
         bGroup.add(add);
         bGroup.add(supprimerNoeud);
@@ -289,8 +351,9 @@ public class Graphics extends JFrame {
 
         JPanel right = new JPanel(new BorderLayout());
         JPanel rup = new JPanel(new BorderLayout());
-        rup.add(add, BorderLayout.NORTH);
-        rup.add(addLien, BorderLayout.SOUTH);
+        rup.add(add, BorderLayout.EAST);
+        rup.add(modPoids, BorderLayout.NORTH);
+        rup.add(addLien, BorderLayout.WEST);
         JPanel rdown = new JPanel(new BorderLayout());
         rdown.add(rup, BorderLayout.NORTH);
         rdown.add(supprimerNoeud, BorderLayout.WEST);
@@ -307,7 +370,6 @@ public class Graphics extends JFrame {
         Dimension tailleEcran = Toolkit.getDefaultToolkit().getScreenSize();
         double hauteur = tailleEcran.getHeight();
         double largeur = tailleEcran.getHeight();
-        System.out.println(hauteur + " " + largeur);
 		f.setLocation((int)hauteur / 4, (int)largeur/2);
         f.setVisible(true);
     }
