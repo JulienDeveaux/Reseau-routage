@@ -1,10 +1,10 @@
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.stream.GraphParseException;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,7 +23,12 @@ public class Graphics extends JFrame {
         "   text-background-color: orange;" +
         "   text-alignment: above;" +
         "   fill-mode: gradient-radial;" +
-        "}" ;
+        "}" +
+        "edge {" +
+        "   text-alignment: above;" +
+        "   text-background-color: orange;" +
+        "   text-background-mode: rounded-box;" +
+        "}";
     private List<String> Liste;
     private List<String> Liens;
 
@@ -60,9 +65,11 @@ public class Graphics extends JFrame {
 
         /* Génération aléatoire de poids de lien entre 1 et 10 */
         Random r = new Random();
-        for(int i = 0;i < Liste.size(); i++) {
-            Node n = graph.getNode(i);
-            n.setAttribute("p", r.nextInt(10 - 1) + 1);
+        for(int i = 0;i < Liens.size(); i++) {
+            Edge e = graph.getEdge(i);
+            int rand = r.nextInt(10 - 1) + 1;
+            e.setAttribute("p", rand);
+            e.setAttribute("ui.label", rand);
         }
 
         graph.display();
@@ -74,6 +81,7 @@ public class Graphics extends JFrame {
         JButton addLien = new JButton("Ajouter Lien");
         JButton supprimerNoeud = new JButton("Supprimer Noeud");
         JButton supprimerLien = new JButton("Supprimer Lien");
+        JButton table = new JButton("Table de routage");
         JButton quitter = new JButton("Quitter");
 
         quitter.addActionListener(actionEvent -> System.exit(0));
@@ -83,6 +91,8 @@ public class Graphics extends JFrame {
                 JFrame frame = new JFrame("Ajouter Noeud");
                 JLabel n = new JLabel("Nom du Noeud : ");
                 JTextField nom = new JTextField("             ");
+                JLabel p = new JLabel("Poids du lien : ");
+                JTextField poids = new JTextField("             ");
                 JButton ok = new JButton("OK");
 				JButton annuler = new JButton("Annuler");
 				JComboBox<String> combo = new JComboBox<>();
@@ -96,6 +106,12 @@ public class Graphics extends JFrame {
                         nom.setText("");
                     }
                 });
+				poids.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        poids.setText("");
+                    }
+                });
 				ok.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
@@ -107,6 +123,9 @@ public class Graphics extends JFrame {
                             graph.addEdge(nom.getText() + "-" + combo.getSelectedItem(), nom.getText(), (String) combo.getSelectedItem());
                             Liens.add(nom.getText() + "-" + combo.getSelectedItem());
                         }
+                        Edge e = graph.getEdge(nom.getText() + "-" + combo.getSelectedItem());  //TODO check int
+                        e.setAttribute("p", poids.getText());
+                        e.setAttribute("ui.label", poids.getText());
                         Node node = graph.getNode(nom.getText());
                         node.setAttribute("ui.label", nom.getText());
                         frame.setVisible(false);
@@ -125,6 +144,10 @@ public class Graphics extends JFrame {
 				JPanel up = new JPanel(new BorderLayout());
 				up.add(n, BorderLayout.WEST);
 				up.add(nom, BorderLayout.EAST);
+				JPanel inside = new JPanel(new BorderLayout());
+				inside.add(p, BorderLayout.WEST);
+				inside.add(poids, BorderLayout.EAST);
+				up.add(inside, BorderLayout.NORTH);
 				up.add(combo);
 
 				JPanel down = new JPanel(new BorderLayout());
@@ -242,6 +265,8 @@ public class Graphics extends JFrame {
                 JFrame frame = new JFrame("Ajouter Lien");
                 JButton ok = new JButton("OK");
                 JButton annuler = new JButton("Annuler");
+                JLabel text = new JLabel("Poids du Lien : ");
+                JTextField poids = new JTextField("     ");
                 JComboBox<String> comboA = new JComboBox<>();
                 for (String s : Liste) {
                     comboA.addItem(s);
@@ -251,11 +276,20 @@ public class Graphics extends JFrame {
                     comboB.addItem(s);
                 }
 
+                poids.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        poids.setText("");
+                    }
+                });
                 ok.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         graph.addEdge(comboA.getSelectedItem() + "-" + comboB.getSelectedItem(), (String) comboA.getSelectedItem(), (String) comboB.getSelectedItem());
                         Liens.add(comboA.getSelectedItem() + "-" + comboB.getSelectedItem());
+                        Edge e = graph.getEdge(comboA.getSelectedItem() + "-" + comboB.getSelectedItem());
+                        e.setAttribute("p", poids.getText());
+                        e.setAttribute("ui.label", poids.getText());
                         frame.setVisible(false);
                     }
                 });
@@ -271,6 +305,10 @@ public class Graphics extends JFrame {
                 bg.add(annuler);
 
                 JPanel up = new JPanel(new BorderLayout());
+                JPanel inside = new JPanel(new BorderLayout());
+                inside.add(text, BorderLayout.WEST);
+                inside.add(poids, BorderLayout.EAST);
+                up.add(inside, BorderLayout.NORTH);
                 up.add(comboA, BorderLayout.WEST);
                 up.add(new JLabel("Avec : "), BorderLayout.CENTER);
                 up.add(comboB, BorderLayout.EAST);
@@ -295,23 +333,24 @@ public class Graphics extends JFrame {
                 JButton ok = new JButton("OK");
                 JButton quitter = new JButton("Quitter");
                 JComboBox combo = new JComboBox();
-                Node noeud;
-                for(int i = 0;i < Liste.size();i++){
-                    noeud = graph.getNode(Liste.get(i));
-                    combo.addItem(Liste.get(i) + " : " + noeud.getAttribute("p"));
+                Edge e;
+                for(int i = 0;i < Liens.size();i++){
+                    e = graph.getEdge(i);
+                    combo.addItem(Liens.get(i) + " : " + e.getAttribute("p"));
                 }
 
                 combo.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        poids.setText((String)combo.getSelectedItem()); //TODO Faire un format pour avoir que ce qui est après du " : "
+                        poids.setText(String.valueOf(combo.getSelectedIndex()));
                     }
                 });
                 ok.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-                        Node n = graph.getNode((String)combo.getSelectedItem()); //TODO Pareil
-                        //n.setAttribute("p", poids.getText()); //nullPointerException
+                        Edge e = graph.getEdge(combo.getSelectedIndex());
+                        e.setAttribute("p", poids.getText());
+                        e.setAttribute("ui.label", poids.getText());
                         frame.setVisible(false);
                     }
                 });
@@ -340,13 +379,22 @@ public class Graphics extends JFrame {
                 Rectangle bordure = f.getBounds();
                 frame.setLocation(bordure.x + bordure.width, bordure.y);
                 frame.setVisible(true);
-                poids.setText("");  //TODO A voir si c'est nécéssaire
+                poids.setText("");
+            }
+        });
+        table.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                Table t = new Table(graph);
             }
         });
         ButtonGroup bGroup = new ButtonGroup();
         bGroup.add(add);
+        bGroup.add(modPoids);
+        bGroup.add(addLien);
         bGroup.add(supprimerNoeud);
         bGroup.add(supprimerLien);
+        bGroup.add(table);
         bGroup.add(quitter);
 
         JPanel right = new JPanel(new BorderLayout());
@@ -354,6 +402,7 @@ public class Graphics extends JFrame {
         rup.add(add, BorderLayout.EAST);
         rup.add(modPoids, BorderLayout.NORTH);
         rup.add(addLien, BorderLayout.WEST);
+        rup.add(table, BorderLayout.SOUTH);
         JPanel rdown = new JPanel(new BorderLayout());
         rdown.add(rup, BorderLayout.NORTH);
         rdown.add(supprimerNoeud, BorderLayout.WEST);
