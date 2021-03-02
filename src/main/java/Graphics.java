@@ -404,20 +404,22 @@ public class Graphics extends JFrame {
         bGroup.add(quitter);
 
         JPanel right = new JPanel(new BorderLayout());
-        JPanel rup = new JPanel(new BorderLayout());
-        rup.add(add, BorderLayout.EAST);
-        rup.add(modPoids, BorderLayout.NORTH);
-        rup.add(addLien, BorderLayout.WEST);
-        rup.add(table, BorderLayout.SOUTH);
-        JPanel rdown = new JPanel(new BorderLayout());
-        rdown.add(rup, BorderLayout.NORTH);
-        rdown.add(supprimerNoeud, BorderLayout.WEST);
-        rdown.add(supprimerLien, BorderLayout.EAST);
-        rdown.add(quitter, BorderLayout.SOUTH);
-        right.add(rdown, BorderLayout.SOUTH);
+        right.add(addLien, BorderLayout.NORTH);
+        right.add(supprimerNoeud, BorderLayout.SOUTH);
+
+        JPanel left = new JPanel(new BorderLayout());
+        left.add(add, BorderLayout.SOUTH);
+        left.add(supprimerLien, BorderLayout.NORTH);
+
+        JPanel down = new JPanel(new BorderLayout());
+        down.add(modPoids, BorderLayout.NORTH);
+        down.add(quitter, BorderLayout.SOUTH);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(table, BorderLayout.NORTH);
+        mainPanel.add(down, BorderLayout.SOUTH);
         mainPanel.add(right, BorderLayout.WEST);
+        mainPanel.add(left, BorderLayout.EAST);
 
         f.getContentPane().add(mainPanel);
         f.pack();
