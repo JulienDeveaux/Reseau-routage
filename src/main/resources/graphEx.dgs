@@ -1,0 +1,19 @@
+DGS004
+null 0 0
+
+an Noeud1 ui.label:Noeud1
+an Noeud2 ui.label:Noeud2
+an Noeud3 ui.label:Noeud3
+an Noeud4 ui.label:Noeud4
+an Noeud5 ui.label:Noeud5
+an Noeud6 ui.label:Noeud6
+
+ae Noeud1-Noeud2 Noeud1 Noeud2 p:1 ui.label:1
+ae Noeud1-Noeud3 Noeud1 Noeud3 p:2 ui.label:2
+ae Noeud2-Noeud4 Noeud2 Noeud4 p:3 ui.label:3
+ae Noeud2-Noeud3 Noeud2 Noeud3 p:2 ui.label:2
+ae Noeud2-Noeud5 Noeud2 Noeud5 p:1 ui.label:1
+ae Noeud3-Noeud5 Noeud3 Noeud5 p:3 ui.label:3
+ae Noeud4-Noeud5 Noeud4 Noeud5 p:1 ui.label:1
+ae Noeud4-Noeud6 Noeud4 Noeud6 p:1 ui.label:1
+ae Noeud5-Noeud6 Noeud5 Noeud6 p:3 ui.label:3

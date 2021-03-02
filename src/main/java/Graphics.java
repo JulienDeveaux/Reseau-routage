@@ -19,6 +19,7 @@ public class Graphics extends JFrame {
     protected String styleSheet =
         "node {" +
         "   size: 10px, 10px;" +
+        "   text-size: 15px;" +
         "	fill-color: grey, red;" +
         "   text-background-mode: rounded-box;" +
         "   text-background-color: orange;" +
@@ -29,6 +30,7 @@ public class Graphics extends JFrame {
         "   text-alignment: above;" +
         "   text-background-color: orange;" +
         "   text-background-mode: rounded-box;" +
+        "   text-size: 20px;" +
         "}";
     private List<String> Liste;
     private List<String> Liens;
@@ -39,38 +41,98 @@ public class Graphics extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Graphics g = new Graphics();
-            g.initUI();
+        JFrame frame = new JFrame("Choix Fichier Graph");
+        JButton g1 = new JButton("Graph Custom");
+        JButton g2 = new JButton("Exemple du cours");
+        JButton ok = new JButton("OK");
+        JTextField link = new JTextField("src/main/resources/graphPerso.dgs");
+        JLabel lien = new JLabel("fichier dgs : ");
+        JCheckBox rand = new JCheckBox("Génération aléatoire des poids ?", true);
+
+        g1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SwingUtilities.invokeLater(() -> {
+                    Graphics g = new Graphics();
+                    g.initUI("src/main/resources/graph.dgs", true);
+                });
+                frame.setVisible(false);
+            }
         });
+        g2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SwingUtilities.invokeLater(() -> {
+                    Graphics g = new Graphics();
+                    g.initUI("src/main/resources/graphEx.dgs", false);
+                });
+                frame.setVisible(false);
+            }
+        });
+        ok.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SwingUtilities.invokeLater(() -> {
+                    Graphics g = new Graphics();
+                    g.initUI(link.getText(), rand.isSelected());
+                });
+                frame.setVisible(false);
+            }
+        });
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(g1);
+        bg.add(g2);
+
+        JPanel up = new JPanel(new BorderLayout());
+        up.add(g1, BorderLayout.NORTH);
+        up.add(g2, BorderLayout.SOUTH);
+
+        JPanel down = new JPanel(new BorderLayout());
+        down.add(lien, BorderLayout.WEST);
+        down.add(link, BorderLayout.CENTER);
+        down.add(rand, BorderLayout.EAST);
+        down.add(ok, BorderLayout.SOUTH);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(up, BorderLayout.NORTH);
+        mainPanel.add(down, BorderLayout.SOUTH);
+
+        frame.add(mainPanel);
+        frame.pack();
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
     }
 
-    private void initUI() {
+    private void initUI(String link, boolean random) {
         System.setProperty("org.graphstream.ui", "swing");
         Graph graph = new MultiGraph("Routage");
         graph.setAttribute("ui.stylesheet", styleSheet);
 
-        for(int i = 1; i < 7; i++) {
-            Liste.add("Noeud" + i);
-            for(int j = i + 1; j < 7; j++) {
-                Liens.add("Noeud" + i + "-" + "Noeud" + j);
-            }
-        }
-
         try{
-            graph.read("src/main/java/graph.dgs");
+            graph.read(link);
         } catch (IOException | GraphParseException e) {
             e.printStackTrace();
             System.out.println("DGS FILE ERROR");
         }
 
+        for(int i = 1; i < graph.getNodeCount() + 1; i++) {
+            Liste.add("Noeud" + i);
+            for(int j = i + 1; j < graph.getNodeCount() + 1; j++) {
+                Liens.add("Noeud" + i + "-" + "Noeud" + j);
+            }
+        }
+
         /* Génération aléatoire de poids de lien entre 1 et 10 */
-        Random r = new Random();
-        for(int i = 0;i < Liens.size(); i++) {
-            Edge e = graph.getEdge(i);
-            int rand = r.nextInt(10 - 1) + 1;
-            e.setAttribute("p", rand);
-            e.setAttribute("ui.label", rand);
+        if(random) {
+            Random r = new Random();
+            for (int i = 0; i < Liens.size(); i++) {
+                Edge e = graph.getEdge(i);
+                int rand = r.nextInt(10 - 1) + 1;
+                e.setAttribute("p", rand);
+                e.setAttribute("ui.label", rand);
+            }
         }
 
         graph.display();

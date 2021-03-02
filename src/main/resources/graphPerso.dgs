@@ -1,0 +1,10 @@
+DGS004
+null 0 0
+
+an Noeud1 ui.label:Noeud1
+an Noeud2 ui.label:Noeud2
+an Noeud3 ui.label:Noeud3
+
+ae Noeud1-Noeud2 Noeud1 Noeud2 p:1 ui.label:1
+ae Noeud1-Noeud3 Noeud1 Noeud3 p:2 ui.label:2
+ae Noeud2-Noeud3 Noeud2 Noeud3 p:3 ui.label:3
