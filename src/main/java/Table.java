@@ -2,6 +2,7 @@ import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.Graph;
 
 import javax.swing.*;
+import javax.swing.table.TableColumnModel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -55,6 +56,7 @@ public class Table {
                 } else {
                     res.setText(ch);
                 }
+                dijkstra.clear();
             }
         });
         table.addActionListener(new ActionListener() {
@@ -63,6 +65,9 @@ public class Table {
                 JFrame frame = new JFrame("Table de Routage de " + comm1.getSelectedItem());
 
                 JTable tableau = new JTable(new TableObject((String) comm1.getSelectedItem(), g, Liens, Liste));
+                TableColumnModel model = tableau.getColumnModel();
+                model.getColumn(0).setPreferredWidth(100);
+                model.getColumn(1).setPreferredWidth(450);
 
                 frame.getContentPane().add(tableau.getTableHeader(), BorderLayout.NORTH);
                 frame.getContentPane().add(tableau, BorderLayout.CENTER);

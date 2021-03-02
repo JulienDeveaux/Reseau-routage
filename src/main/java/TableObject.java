@@ -1,8 +1,10 @@
 import org.graphstream.algorithm.Dijkstra;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.List;
+import java.util.*;
 
 public class TableObject extends AbstractTableModel {
     public class TableNode {
@@ -43,19 +45,91 @@ public class TableObject extends AbstractTableModel {
         this.Liste = liste;
         this.Liens = liens;
         this.entete[1] = noeudDepart;
-        this.tableau = new TableNode[Liste.size()];
-        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "p");
-        dijkstra.init(g);
-        dijkstra.setSource(g.getNode(entete[1]));
-        dijkstra.compute();
-        for(int i = 0; i < Liste.size(); i++) {
-            String ch = String.valueOf(dijkstra.getPath(g.getNode(Liste.get(i))));
-            if(ch == "[]") {
-                this.tableau[i] = new TableNode(Liste.get(i), "Aucune connexion entre les commutateurs");
+        this.tableau = new TableNode[Liste.size() - 1];
+
+        int j = 0;
+        for(int i = 0; i < Liste.size() && (j+i) < Liste.size(); i++) {
+            if (Liste.get(i).equals(noeudDepart) && !noeudDepart.equals(Liste.get(Liste.size() - 1))) {
+                j++;
+            }
+            if(i == Liste.size()  -1 && noeudDepart.equals(Liste.get(Liste.size() - 1))) {
+                continue;
+            }
+            String ch = routage(noeudDepart, Liste.get(i + j));
+            if (ch.equals("")) {
+                this.tableau[i] = new TableNode(Liste.get(i + j), "Aucune connexion entre les commutateurs");
             } else {
-                this.tableau[i] = new TableNode(Liste.get(i), ch);
+                this.tableau[i] = new TableNode(Liste.get(i + j), ch);
             }
         }
+    }
+
+    private String routage(String noeudDepart, String noeudArrive) {
+        List<Node> voisins = new ArrayList<>();
+        String res = "";
+
+        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "p");
+        dijkstra.init(g);
+
+        for(Edge e : g.getNode(noeudDepart)) {
+            voisins.add(e.getOpposite(g.getNode(noeudDepart)));
+        }
+
+        int[] pStore = new int[voisins.size()];
+        for(int i = 0; i < voisins.size(); i++) {
+            try {
+                pStore[i] = (int) g.getEdge(g.getNode(noeudDepart).getAttribute("ui.label") + "-" + voisins.get(i).getAttribute("ui.label")).getAttribute("p");
+                g.getEdge(g.getNode(noeudDepart).getAttribute("ui.label") + "-" + voisins.get(i).getAttribute("ui.label")).setAttribute("p", 500000);
+            } catch (NullPointerException e) {
+                pStore[i] = (int) g.getEdge(voisins.get(i).getAttribute("ui.label") + "-" + g.getNode(noeudDepart).getAttribute("ui.label")).getAttribute("p");
+                g.getEdge(voisins.get(i).getAttribute("ui.label") + "-" + g.getNode(noeudDepart).getAttribute("ui.label")).setAttribute("p", 500000);
+            }
+        }
+        HashMap <Integer, String> map = new HashMap<>();
+
+        for(int i = 0; i < voisins.size(); i++) {
+            dijkstra.setSource(noeudArrive);
+            dijkstra.compute(); //chemin entre l'arrivée et le voisin i
+            String chemin = String.valueOf(dijkstra.getPath(voisins.get(i)));
+            chemin = chemin.substring(1, chemin.length() - 1);
+            String[] noeuds = chemin.split(", ");
+            int poids = 0;
+            for(int j = 0; j < noeuds.length - 1; j++) {
+                try {
+                    poids = poids + (int) g.getEdge(noeuds[j] + "-" + noeuds[j + 1]).getAttribute("p");
+                } catch (NullPointerException e) {
+                    poids = poids + (int) g.getEdge(noeuds[j + 1] + "-" + noeuds[j]).getAttribute("p");
+                }
+            }
+            poids += pStore[i];
+            if(map.get(poids) != null) {
+                map.put(poids, "( " + map.get(poids) + " / " + voisins.get(i) + " )");
+            } else {
+                map.put(poids, String.valueOf(voisins.get(i)));
+            }
+        }
+
+        List<Integer> sorted = new ArrayList<>(map.keySet());
+        Collections.sort(sorted);
+        for(int i = 0; i < sorted.size(); i++) {
+            if(i < sorted.size() - 1 && sorted.get(i) == sorted.get(i + 1)) {
+                res = res + "( " + map.get(sorted.get(i)) + "->" + sorted.get(i) + " / " + map.get(sorted.get(i + 1)) + " " + sorted.get(i + 1) + " ) / ";
+            } else {
+                res = res + map.get(sorted.get(i)) + "->" + sorted.get(i) + " / ";
+            }
+        }
+        res = res.substring(0, res.length() - 2);
+
+        for(int i = 0; i < voisins.size(); i++) {
+            try {
+                g.getEdge(g.getNode(noeudDepart).getAttribute("ui.label") + "-" + voisins.get(i).getAttribute("ui.label")).setAttribute("p", pStore[i]);
+            } catch (NullPointerException e) {
+                g.getEdge(voisins.get(i).getAttribute("ui.label") + "-" + g.getNode(noeudDepart).getAttribute("ui.label")).setAttribute("p", pStore[i]);
+            }
+        }
+
+        dijkstra.clear();
+        return res;
     }
 
     public int getRowCount() {
