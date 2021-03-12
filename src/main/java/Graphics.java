@@ -41,7 +41,7 @@ public class Graphics extends JFrame {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Choix Fichier Graph");
+        JFrame frame = new JFrame("Choix fichier Graph");
         JButton g1 = new JButton("Graph Custom");
         JButton g2 = new JButton("Exemple du cours");
         JButton ok = new JButton("OK");
@@ -119,9 +119,9 @@ public class Graphics extends JFrame {
 
         for(int i = 1; i < graph.getNodeCount() + 1; i++) {
             Liste.add("Noeud" + i);
-            for(int j = i + 1; j < graph.getNodeCount() + 1; j++) {
-                Liens.add("Noeud" + i + "-" + "Noeud" + j);
-            }
+        }
+        for(int i = 0; i < graph.getEdgeCount(); i++) {
+            Liens.add(graph.getEdge(i).toString().replaceAll("\\[([^\\)]+)\\]", ""));
         }
 
         /* Génération aléatoire de poids de lien entre 1 et 10 */
@@ -159,8 +159,8 @@ public class Graphics extends JFrame {
                 JButton ok = new JButton("OK");
 				JButton annuler = new JButton("Annuler");
 				JComboBox<String> combo = new JComboBox<>();
-				for(int i = 0; i < Liste.size(); i++) {
-				    combo.addItem(Liste.get(i));
+                for (String s : Liste) {
+                    combo.addItem(s);
                 }
 
 				nom.addMouseListener(new MouseAdapter() {
@@ -186,8 +186,8 @@ public class Graphics extends JFrame {
                             graph.addEdge(nom.getText() + "-" + combo.getSelectedItem(), nom.getText(), (String) combo.getSelectedItem());
                             Liens.add(nom.getText() + "-" + combo.getSelectedItem());
                         }
-                        Edge e = graph.getEdge(nom.getText() + "-" + combo.getSelectedItem());  //TODO check int
-                        e.setAttribute("p", poids.getText());
+                        Edge e = graph.getEdge(nom.getText() + "-" + combo.getSelectedItem());
+                        e.setAttribute("p", Integer.valueOf(poids.getText()));
                         e.setAttribute("ui.label", poids.getText());
                         Node node = graph.getNode(nom.getText());
                         node.setAttribute("ui.label", nom.getText());
@@ -249,6 +249,7 @@ public class Graphics extends JFrame {
                             }
                             temp.add(string);
                         }
+                        Liens = temp;
                         frame.setVisible(false);
                     }
                 });
@@ -332,7 +333,7 @@ public class Graphics extends JFrame {
                 JButton ok = new JButton("OK");
                 JButton annuler = new JButton("Annuler");
                 JLabel text = new JLabel("Poids du Lien : ");
-                JTextField poids = new JTextField("     ");
+                JTextField poids = new JTextField("", 10);
                 JComboBox<String> comboA = new JComboBox<>();
                 for (String s : Liste) {
                     comboA.addItem(s);
@@ -354,7 +355,7 @@ public class Graphics extends JFrame {
                         graph.addEdge(comboA.getSelectedItem() + "-" + comboB.getSelectedItem(), (String) comboA.getSelectedItem(), (String) comboB.getSelectedItem());
                         Liens.add(comboA.getSelectedItem() + "-" + comboB.getSelectedItem());
                         Edge e = graph.getEdge(comboA.getSelectedItem() + "-" + comboB.getSelectedItem());
-                        e.setAttribute("p", poids.getText());
+                        e.setAttribute("p", Integer.valueOf(poids.getText()));
                         e.setAttribute("ui.label", poids.getText());
                         frame.setVisible(false);
                     }
@@ -401,8 +402,8 @@ public class Graphics extends JFrame {
                 JButton quitter = new JButton("Quitter");
                 JComboBox combo = new JComboBox();
                 Edge e;
-                for(int i = 0;i < Liens.size();i++){
-                    e = graph.getEdge(i);
+                for(int i = 0; i < Liens.size(); i++){
+                    e = graph.getEdge(Liens.get(i));
                     combo.addItem(Liens.get(i) + " : " + e.getAttribute("p"));
                 }
 
@@ -416,7 +417,8 @@ public class Graphics extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         Edge e = graph.getEdge(combo.getSelectedIndex());
-                        e.setAttribute("p", poids.getText());
+                        System.out.println(" e : " + e);
+                        e.setAttribute("p", Integer.valueOf(poids.getText()));
                         e.setAttribute("ui.label", poids.getText());
                         frame.setVisible(false);
                     }

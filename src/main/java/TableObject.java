@@ -151,7 +151,6 @@ public class TableObject extends AbstractTableModel {
             case 1:
                 return tableau[rowIndex].getNoeud();
             default:
-                System.out.println("GNNNNNNNNNNNNNNNNNNNNNNNNNNEEEEEEEEEEE");
                 return null;
         }
     }
