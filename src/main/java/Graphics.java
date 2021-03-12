@@ -417,7 +417,6 @@ public class Graphics extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         Edge e = graph.getEdge(combo.getSelectedIndex());
-                        System.out.println(" e : " + e);
                         e.setAttribute("p", Integer.valueOf(poids.getText()));
                         e.setAttribute("ui.label", poids.getText());
                         frame.setVisible(false);
